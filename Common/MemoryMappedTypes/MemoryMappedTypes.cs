@@ -1,6 +1,63 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace Mapster.Common.MemoryMappedTypes;
+
+public enum Keys__
+{
+    Amenity,
+    Boundary,
+    Admin_Level,
+    Building,
+    Highway,
+    Landuse,
+    Leisure,
+    Military,
+    Natural,
+    Place,
+    Railway,
+    Sport,
+    Water,
+    Waterway,
+    Name
+}
+
+public enum Boundery
+{
+    Forest,
+    Administrative
+}
+
+public enum CountryLand
+{
+    Forest,
+    Orchard,
+    Residential,
+    Cemetery,
+    Industrial,
+    Commercial,
+    Square,
+    Construction,
+    Military,
+    Quarry,
+    Brownfield,
+    Farm,
+    Meadow,
+    Grass,
+    Greenfield,
+    Recreation_Ground,
+    Winter_Sports,
+    Allotments,
+    Reservoir,
+    Basin
+}
+
+public enum Population
+{
+    City,
+    Town,
+    Locality,
+    Hamlet
+}
 
 [StructLayout(LayoutKind.Explicit, Pack = 1)]
 public struct FileHeader
@@ -116,11 +173,19 @@ public struct PropertyEntryList
 [StructLayout(LayoutKind.Explicit, Pack = 1)]
 public struct MapFeature
 {
-    // https://wiki.openstreetmap.org/wiki/Key:highway
-    public static string[] HighwayTypes =
+    public enum HighwayTypes
     {
-        "motorway", "trunk", "primary", "secondary", "tertiary", "unclassified", "residential", "road"
-    };
+        Motorway,
+        Trunk,
+        Primary,
+        Secondary,
+        Tertiary,
+        Unclassified,
+        Residential,
+        Road
+    }
+
+    // https://wiki.openstreetmap.org/wiki/Key:highway
 
     [FieldOffset(0)] public long Id;
     [FieldOffset(8)] public int LabelOffset;
