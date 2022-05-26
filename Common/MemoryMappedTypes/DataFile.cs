@@ -1,4 +1,4 @@
-﻿using System.IO.MemoryMappedFiles;
+using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -17,6 +17,7 @@ public delegate bool MapFeatureDelegate(MapFeatureData featureData);
 /// <summary>
 ///     Aggregation of all the data needed to render a map feature
 /// </summary>
+
 public readonly ref struct MapFeatureData
 {
     public long Id { get; init; }
@@ -24,7 +25,7 @@ public readonly ref struct MapFeatureData
     public GeometryType Type { get; init; }
     public ReadOnlySpan<char> Label { get; init; }
     public ReadOnlySpan<Coordinate> Coordinates { get; init; }
-    public Dictionary<string, string> Properties { get; init; }
+    public Dictionary<Keys__, string> Properties { get; init; }
 }
 
 /// <summary>
@@ -47,6 +48,7 @@ public unsafe class DataFile : IDisposable
     private readonly FileHeader* _fileHeader;
     private readonly MemoryMappedViewAccessor _mma;
     private readonly MemoryMappedFile _mmf;
+
 
     private readonly byte* _ptr;
     private readonly int CoordinateSizeInBytes = Marshal.SizeOf<Coordinate>();
@@ -181,21 +183,28 @@ public unsafe class DataFile : IDisposable
 
                 if (isFeatureInBBox)
                 {
-                    var properties = new Dictionary<string, string>(feature->PropertyCount);
+                    // Changes the dictionary key type from string to Keys__ enum
+                    var properties = new Dictionary<Keys__, string>(feature->PropertyCount);
                     for (var p = 0; p < feature->PropertyCount; ++p)
                     {
                         GetProperty(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, p * 2 + feature->PropertiesOffset, out var key, out var value);
-                        properties.Add(key.ToString(), value.ToString());
+
+                        // This also removes the OSM keys that are not used in the application.
+                        if (!Enum.TryParse<Keys__>(key.ToString(), true, out var keyToAdd))
+                        {
+                            continue;
+                        }
+                        properties.Add(keyToAdd, value.ToString());
                     }
 
                     if (!action(new MapFeatureData
-                        {
-                            Id = feature->Id,
-                            Label = label,
-                            Coordinates = coordinates,
-                            Type = feature->GeometryType,
-                            Properties = properties
-                        }))
+                    {
+                        Id = feature->Id,
+                        Label = label,
+                        Coordinates = coordinates,
+                        Type = feature->GeometryType,
+                        Properties = properties
+                    }))
                     {
                         break;
                     }
